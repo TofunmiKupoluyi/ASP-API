@@ -32,7 +32,7 @@ app.use("/admin", adminRouter);
 app.use("/feedback", feedbackRouter);
 app.use("/rant", rantRouter);
 chatRouter.get("/", function(req, res) {
-    var chatId = req.query.chatid;
+    var chatId = req.query.chatid || req.session.chatId;
     if (!(req.session.chatId)) {
         var password = "";
         connection.query("INSERT INTO chat_info SET password = ?", [password], function(err, res1) {
@@ -46,6 +46,7 @@ chatRouter.get("/", function(req, res) {
             }
         });
     } else {
+        req.session.chatId = chatId;
         res.sendfile("./chat.html")
     }
 });
