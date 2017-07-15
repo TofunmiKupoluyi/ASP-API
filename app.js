@@ -707,6 +707,25 @@ rantRouter.post("/likeRant", function(req, res) {
     });
 });
 
+rantRouter.post("/unlikeRant", function(req, res){
+    var rantId = req.body.rantId;
+    var chatId = req.session.chatId;
+    var data = {
+        err: 1,
+        res: ""
+    }
+    connection.query("DELETE FROM rant_likes WHERE rant_id = ? AND chat_id = ?", [rantId, chatId], function(err, res1){
+        if(err){
+            data.res = err;
+            res.json(data);
+        }else{
+            data.res = "Successful";
+            data.err = 0;
+            res.json(data);
+        }
+    });
+});
+
 rantRouter.post("/replyRant", function(req, res) {
     var rantId = req.body.rantId;
     var chatId = req.body.chatId || req.session.chatId;
