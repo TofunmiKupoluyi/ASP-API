@@ -495,7 +495,7 @@ rantRouter.get("/getPublicRants", function(req, res) {
                 data.res[array[i]]["likes"] = [];
                 for (var j in res1) {
                     if (res1[j].rant_id == array[i]) {
-                        data.res[array[i]]["likes"].push(res1[j]);
+                        data.res[array[i]]["likes"].push(res1[j].chat_id);
                     }
                 }
                 if (i == (array.length - 1)) {
