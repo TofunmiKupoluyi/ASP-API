@@ -665,7 +665,24 @@ rantRouter.get("/getRantsByUser", function(req, res) {
         });
     }
 });
-
+rantRouter.post("/deleteRant", function(req, res){
+    var rantId = req.body.rantId;
+    var data = {
+        err:1,
+        res:""
+    }
+    connection.query("DELETE FROM rants WHERE rant_id=?",[rantId], function(err, res1){
+        if(err){
+            data.res=err;
+            res.json(data); 
+        }
+        else{
+            data.res="Successful";
+            data.err=0;
+            res.json(data);
+        }
+    });
+});
 rantRouter.post("/postRant", function(req, res) {
     var rantContent = req.body.rantContent;
     var pseudonym = req.body.pseudonym || "Anon";
