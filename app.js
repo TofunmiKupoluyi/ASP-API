@@ -10,8 +10,9 @@ var connection = mysql.createConnection({
     user: process.env.MYSQL_USER || "root",
     password: process.env.MYSQL_PASSWORD || "",
     database: process.env.MYSQL_DB || "asp2",
+    charset: "utf8mb4"
 });
-
+console.log(connection);
 //essentials
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
