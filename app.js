@@ -675,6 +675,7 @@ rantRouter.post("/deleteRant", function(req, res){
         if(err){
             data.res=err;
             res.json(data); 
+            console.log(err);
         }
         else{
             data.res="Successful";
@@ -685,6 +686,7 @@ rantRouter.post("/deleteRant", function(req, res){
 });
 rantRouter.post("/postRant", function(req, res) {
     var rantContent = req.body.rantContent;
+    console.log(rantContent); 
     var pseudonym = req.body.pseudonym || "Anon";
     var chatId = req.body.chatId || req.session.chatId;
     var rantType = req.body.rantType || 0;
