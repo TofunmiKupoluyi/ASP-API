@@ -561,9 +561,9 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                     
                     for (var i in res1) {
                         var res ={};
-                        res["rant_id"] = res1[i].rant_id;
                         rantIds.push(res1[i].rant_id);
                         res["rant_like_id"] = res1[i].rant_like_id;
+                        res["rant_id"] = res1[i].rant_id;
                         data.res.push(res);
                         if (i == (res1.length - 1)) {
                             getRants(rantIds);
