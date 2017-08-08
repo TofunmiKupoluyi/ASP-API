@@ -6,9 +6,9 @@ var app = express();
 var mysql = require("mysql");
 var giberrish = require("gibberish-aes/dist/gibberish-aes-1.0.0.js");
 var connection = mysql.createConnection({
-    host: process.env.MYSQL_HOST || "pwc-interns.cftwcjh3k0vd.us-west-2.rds.amazonaws.com",
-    user: process.env.MYSQL_USER || "pwc_tofunmi",
-    password: process.env.MYSQL_PASSWORD || "hgbhbdw8934839!!",
+    host: process.env.MYSQL_HOST || "localhost",
+    user: process.env.MYSQL_USER || "root",
+    password: process.env.MYSQL_PASSWORD || "",
     database: process.env.MYSQL_DB || "asp2",
     charset: "utf8mb4"
 });
