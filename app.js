@@ -561,9 +561,9 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                     
                     for (var i in res1) {
                         var res ={};
-                        res[res1[i].rant_id] = {};
+                        res["rant_id"] = res1[i].rant_id;
                         rantIds.push(res1[i].rant_id);
-                        res[res1[i].rant_id]["rant_like_id"] = res1[i].rant_like_id;
+                        res["rant_like_id"] = res1[i].rant_like_id;
                         data.res.push(res);
                         if (i == (res1.length - 1)) {
                             getRants(rantIds);
@@ -590,8 +590,8 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                     //SAVE 0-100 in localstorage
                     data.err = 0;
                     for (var i in res1) {
-                        data.res[i][res1[i].rant_id]["content"] = res1[i].rant_content;
-                        data.res[i][res1[i].rant_id]["pseudonym"] = res1[i].pseudonym;
+                        data.res[i]["content"] = res1[i].rant_content;
+                        data.res[i]["pseudonym"] = res1[i].pseudonym;
                         if (i == (res1.length - 1)) {
                             getReplies(array);
                         }
@@ -607,10 +607,10 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
         if (array.length > 0) {
             connection.query(generateReplyQuery(array), array, function(err, res1, rows) {
                 for (var i in array) {
-                    data.res[i][array[i]]["replies"] = [];
+                    data.res[i]["replies"] = [];
                     for (var j in res1) {
                         if (res1[j].rant_id == array[i]) {
-                            data.res[i][array[i]]["replies"].push(res1[j]);
+                            data.res[i]["replies"].push(res1[j]);
                         }
                     }
                     if (i == (array.length - 1)) {
@@ -625,10 +625,10 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
         if (array.length > 0) {
             connection.query(generateLikesQuery(array), array, function(err, res1, rows) {
                 for (var i in array) {
-                    data.res[i][array[i]]["likes"] = [];
+                    data.res[i]["likes"] = [];
                     for (var j in res1) {
                         if (res1[j].rant_id == array[i]) {
-                            data.res[i][array[i]]["likes"].push(res1[j]);
+                            data.res[i]["likes"].push(res1[j]);
                         }
                     }
                     if (i == (array.length - 1)) {
