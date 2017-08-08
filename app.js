@@ -6,9 +6,9 @@ var app = express();
 var mysql = require("mysql");
 var giberrish = require("gibberish-aes/dist/gibberish-aes-1.0.0.js");
 var connection = mysql.createConnection({
-    host: process.env.MYSQL_HOST || "localhost",
-    user: process.env.MYSQL_USER || "root",
-    password: process.env.MYSQL_PASSWORD || "",
+    host: process.env.MYSQL_HOST || "pwc-interns.cftwcjh3k0vd.us-west-2.rds.amazonaws.com",
+    user: process.env.MYSQL_USER || "pwc_tofunmi",
+    password: process.env.MYSQL_PASSWORD || "hgbhbdw8934839!!",
     database: process.env.MYSQL_DB || "asp2",
     charset: "utf8mb4"
 });
@@ -555,13 +555,16 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                 var loopCompleted = 0;
                 //SAVE 0-100 in localstorage
                 data.err = 0;
-                data.res = {};
+                data.res = [];
                 var rantIds = [];
                 if (res1.length > 0) {
+                    
                     for (var i in res1) {
-                        data.res[res1[i].rant_id] = {};
+                        var res ={};
+                        res[res1[i].rant_id] = {};
                         rantIds.push(res1[i].rant_id);
-                        data.res[res1[i].rant_id]["rant_like_id"] = res1[i].rant_like_id;
+                        res[res1[i].rant_id]["rant_like_id"] = res1[i].rant_like_id;
+                        data.res.push(res);
                         if (i == (res1.length - 1)) {
                             getRants(rantIds);
                         }
@@ -587,8 +590,8 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                     //SAVE 0-100 in localstorage
                     data.err = 0;
                     for (var i in res1) {
-                        data.res[res1[i].rant_id]["content"] = res1[i].rant_content;
-                        data.res[res1[i].rant_id]["pseudonym"] = res1[i].pseudonym;
+                        data.res[i][res1[i].rant_id]["content"] = res1[i].rant_content;
+                        data.res[i][res1[i].rant_id]["pseudonym"] = res1[i].pseudonym;
                         if (i == (res1.length - 1)) {
                             getReplies(array);
                         }
@@ -604,10 +607,10 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
         if (array.length > 0) {
             connection.query(generateReplyQuery(array), array, function(err, res1, rows) {
                 for (var i in array) {
-                    data.res[array[i]]["replies"] = [];
+                    data.res[i][array[i]]["replies"] = [];
                     for (var j in res1) {
                         if (res1[j].rant_id == array[i]) {
-                            data.res[array[i]]["replies"].push(res1[j]);
+                            data.res[i][array[i]]["replies"].push(res1[j]);
                         }
                     }
                     if (i == (array.length - 1)) {
@@ -622,10 +625,10 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
         if (array.length > 0) {
             connection.query(generateLikesQuery(array), array, function(err, res1, rows) {
                 for (var i in array) {
-                    data.res[array[i]]["likes"] = [];
+                    data.res[i][array[i]]["likes"] = [];
                     for (var j in res1) {
                         if (res1[j].rant_id == array[i]) {
-                            data.res[array[i]]["likes"].push(res1[j]);
+                            data.res[i][array[i]]["likes"].push(res1[j]);
                         }
                     }
                     if (i == (array.length - 1)) {
