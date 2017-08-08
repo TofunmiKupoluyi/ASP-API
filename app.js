@@ -12,7 +12,6 @@ var connection = mysql.createConnection({
     database: process.env.MYSQL_DB || "asp2",
     charset: "utf8mb4"
 });
-console.log(connection);
 //essentials
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -589,9 +588,14 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                     var loopCompleted = 0;
                     //SAVE 0-100 in localstorage
                     data.err = 0;
-                    for (var i in res1) {
-                        data.res[i]["content"] = res1[i].rant_content;
-                        data.res[i]["pseudonym"] = res1[i].pseudonym;
+                    console.log(res1);
+                    for (var i in array) {
+                        for(var j in res1){
+                            if(data.res[i]["rant_id"] == res1[j].rant_id){
+                                data.res[i]["content"]= res1[j]["rant_content"];
+                                data.res[i]["pseudonym"]= res1[j]["pseudonym"];
+                            }  
+                        }
                         if (i == (res1.length - 1)) {
                             getReplies(array);
                         }
