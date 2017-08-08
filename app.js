@@ -10,8 +10,9 @@ var connection = mysql.createConnection({
     user: process.env.MYSQL_USER || "root",
     password: process.env.MYSQL_PASSWORD || "",
     database: process.env.MYSQL_DB || "asp2",
+    charset: "utf8mb4"
 });
-
+console.log(connection);
 //essentials
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -32,8 +33,8 @@ app.use("/admin", adminRouter);
 app.use("/feedback", feedbackRouter);
 app.use("/rant", rantRouter);
 chatRouter.get("/", function(req, res) {
-    var chatId = req.query.chatid;
-    if (!(req.session.chatId)) {
+    var chatId = req.query.chatid || req.session.chatId;
+    if (!(req.session.chatId || req.query.chatid)) {
         var password = "";
         connection.query("INSERT INTO chat_info SET password = ?", [password], function(err, res1) {
             if (err) {
@@ -46,6 +47,7 @@ chatRouter.get("/", function(req, res) {
             }
         });
     } else {
+        req.session.chatId = chatId;
         res.sendfile("./chat.html")
     }
 });
@@ -494,7 +496,7 @@ rantRouter.get("/getPublicRants", function(req, res) {
                 data.res[array[i]]["likes"] = [];
                 for (var j in res1) {
                     if (res1[j].rant_id == array[i]) {
-                        data.res[array[i]]["likes"].push(res1[j]);
+                        data.res[array[i]]["likes"].push(res1[j].chat_id);
                     }
                 }
                 if (i == (array.length - 1)) {
@@ -664,9 +666,28 @@ rantRouter.get("/getRantsByUser", function(req, res) {
         });
     }
 });
-
+rantRouter.post("/deleteRant", function(req, res){
+    var rantId = req.body.rantId;
+    var data = {
+        err:1,
+        res:""
+    }
+    connection.query("DELETE FROM rants WHERE rant_id=?",[rantId], function(err, res1){
+        if(err){
+            data.res=err;
+            res.json(data); 
+            console.log(err);
+        }
+        else{
+            data.res="Successful";
+            data.err=0;
+            res.json(data);
+        }
+    });
+});
 rantRouter.post("/postRant", function(req, res) {
     var rantContent = req.body.rantContent;
+    console.log(rantContent); 
     var pseudonym = req.body.pseudonym || "Anon";
     var chatId = req.body.chatId || req.session.chatId;
     var rantType = req.body.rantType || 0;
@@ -706,6 +727,25 @@ rantRouter.post("/likeRant", function(req, res) {
     });
 });
 
+rantRouter.post("/unlikeRant", function(req, res){
+    var rantId = req.body.rantId;
+    var chatId = req.session.chatId;
+    var data = {
+        err: 1,
+        res: ""
+    }
+    connection.query("DELETE FROM rant_likes WHERE rant_id = ? AND chat_id = ?", [rantId, chatId], function(err, res1){
+        if(err){
+            data.res = err;
+            res.json(data);
+        }else{
+            data.res = "Successful";
+            data.err = 0;
+            res.json(data);
+        }
+    });
+});
+
 rantRouter.post("/replyRant", function(req, res) {
     var rantId = req.body.rantId;
     var chatId = req.body.chatId || req.session.chatId;
@@ -725,6 +765,124 @@ rantRouter.post("/replyRant", function(req, res) {
         }
     });
 });
+
+rantRouter.post("/searchRant", function(req, res){
+    var query = req.body.query;
+    var queryArray = query.split(" ");
+    var data = {
+        err:1,
+        res:""
+    }
+    
+    function generateSearchQuery(splitQuery){
+        var baseString = "SELECT * from rants WHERE rant_type = 0 AND (rant_content LIKE ? OR pseudonym LIKE ?)";
+        for(var i=1; i<splitQuery.length; i++){
+            baseString = baseString.concat("AND (rant_content LIKE ? OR pseudonym LIKE ?)");
+        }
+        return baseString;
+    }
+
+    function createArray(splitQuery) {
+        var initialArray = ["%" + splitQuery[0] + "%", "%" + splitQuery[0] + "%"];
+        for (var i = 1; i < splitQuery.length; i++) {
+            initialArray.push("%" + splitQuery[i] + "%");
+            initialArray.push("%" + splitQuery[i] + "%");
+        }
+        console.log(initialArray);
+        return initialArray;
+    }
+
+    function generateLikesQuery(array) {
+        if (array.length > 0) {
+            var baseString = "SELECT * FROM rant_likes WHERE rant_id=?";
+            for (var i = 1; i < array.length; i++) {
+                baseString += " OR rant_id=?";
+            }
+            return baseString;
+        }
+    }
+
+    function generateReplyQuery(array) {
+        if (array.length > 0) {
+            var baseString = "SELECT * FROM rant_replies WHERE rant_id=?";
+            for (var i = 1; i < array.length; i++) {
+                baseString += " OR rant_id=?";
+            }
+            return baseString;
+        }
+    }
+
+    function getRants(queryArray){
+        connection.query(generateSearchQuery(queryArray), createArray(queryArray), function(err, res1, rows){
+            if(err){
+                data.res = err;
+                res.json(data);
+            }
+            else{
+                data.err = 0;
+                data.res = {};
+                var rantIds = [];
+                if (res1.length > 0) {
+                    for (var i in res1) {
+                        rantIds.push(res1[i].rant_id);
+                        data.res[res1[i].rant_id] = {};
+                        data.res[res1[i].rant_id]["content"] = res1[i].rant_content;
+                        data.res[res1[i].rant_id]["pseudonym"] = res1[i].pseudonym;
+                        data.res[res1[i].rant_id]["rantType"] = res1[i].rant_type;
+                        if (i == (res1.length - 1)) {
+                            getReplies(rantIds);
+                        }
+                    }
+                } else {
+                    data.res = [];
+                    res.json(data);
+                }
+            }
+        });
+    }
+
+    function getReplies(array) {
+        if (array.length > 0) {
+            connection.query(generateReplyQuery(array), array, function(err, res1, rows) {
+                for (var i in array) {
+                    data.res[array[i]]["replies"] = [];
+                    for (var j in res1) {
+                        if (res1[j].rant_id == array[i]) {
+                            data.res[array[i]]["replies"].push(res1[j]);
+                        }
+                    }
+                    if (i == (array.length - 1)) {
+                        getLikes(array);
+                    }
+                }
+            });
+        }
+    }
+
+    function getLikes(array) {
+        if (array.length > 0) {
+            connection.query(generateLikesQuery(array), array, function(err, res1, rows) {
+                for (var i in array) {
+                    data.res[array[i]]["likes"] = [];
+                    for (var j in res1) {
+                        if (res1[j].rant_id == array[i]) {
+                            data.res[array[i]]["likes"].push(res1[j]);
+                        }
+                    }
+                    if (i == (array.length - 1)) {
+                        res.json(data);
+                    }
+                }
+            });
+        } else {
+            data.res = [];
+            res.json(data);
+        }
+    }
+
+    getRants(queryArray);
+    
+})
 
 
 app.listen(process.env.PORT || 3000);
