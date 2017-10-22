@@ -912,7 +912,7 @@ rantRouter.post("/searchRant", function(req, res){
 });
 
 imageUploadRouter.post("/uploadImage", function(req, res){
-    console.dir(req.files);
+    console.log(req.files);
 });
 
 
