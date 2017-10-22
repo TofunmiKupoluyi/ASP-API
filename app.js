@@ -913,6 +913,7 @@ rantRouter.post("/searchRant", function(req, res){
 
 imageUploadRouter.post("/uploadImage", function(req, res){
     console.log(req.files);
+    res.json();
 });
 
 
