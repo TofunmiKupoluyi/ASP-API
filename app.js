@@ -4,6 +4,8 @@ var session = require("express-session");
 var cookieSession = require('cookie-session');
 var app = express();
 var mysql = require("mysql");
+var cloudinary = require("cloudinary");
+var multer = require("multer");
 var giberrish = require("gibberish-aes/dist/gibberish-aes-1.0.0.js");
 var connection = mysql.createConnection({
     host: process.env.MYSQL_HOST || "localhost",
@@ -11,6 +13,11 @@ var connection = mysql.createConnection({
     password: process.env.MYSQL_PASSWORD || "",
     database: process.env.MYSQL_DB || "asp2",
     charset: "utf8mb4"
+});
+cloudinary.config({
+    cloud_name: 'audiri', 
+    api_key: '271472318998864', 
+    api_secret: 'WPhZIjl0wXufPnvi5imXmcb38Y0' 
 });
 //essentials
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,17 +27,23 @@ app.use("/", express.static("./node_modules"));
 app.use("/", express.static("./simple-scrollbar-master"));
 app.use("/scrollbar", express.static("./malihu-custom-scrollbar-plugin-master"));
 app.use(cookieSession({ secret: 'tobo!', cookie: { maxAge: 60 * 60 * 1000 } }));
+app.use(multer({dest:'./uploads/'}).any());
+
 //routers
 var chatRouter = express.Router();
 var loginRouter = express.Router();
 var adminRouter = express.Router();
 var feedbackRouter = express.Router();
 var rantRouter = express.Router();
+var listenerSignupRouter = express.Router();
+var imageUploadRouter = express.Router();
 app.use("/counsel", chatRouter);
 app.use("/login", loginRouter);
 app.use("/admin", adminRouter);
 app.use("/feedback", feedbackRouter);
 app.use("/rant", rantRouter);
+app.use("/listenerSignup", listenerSignupRouter);
+app.use("/imageUpload", imageUploadRouter);
 chatRouter.get("/", function(req, res) {
     var chatId = req.query.chatid || req.session.chatId;
     if (!(req.session.chatId || req.query.chatid)) {
@@ -375,7 +388,7 @@ rantRouter.post("/getSingleRant", function(req, res) {
     }
 
     function getReplies(array) {
-
+        console.log(array);
         connection.query("SELECT * FROM rant_replies WHERE rant_id=?", array, function(err, res1, rows) {
             data.res[array[0]]["replies"] = [];
             if (res1.length > 0) {
@@ -413,11 +426,16 @@ rantRouter.post("/getSingleRant", function(req, res) {
 });
 
 rantRouter.get("/getPublicRants", function(req, res) {
+
+    // the front end ask for the first 10 rants. e.g. they have ids=1,4,7,8,10,13,16,..,21
+    // when the user scroll down the front end ask for another 10 rants, and the front end
+    // specify as parameter to the server that the ids have to be greater than 21.
+    // so for the second 
     var data = {
         err: 1,
         res: ""
     };
-    var limit = "LIMIT 1000";
+    var limit = "LIMIT 1000"; // Change the limit to 20 and the WHERE the date/ rant id is greater than a certain number
     var addedQuery = "WHERE rant_type = 0 LIMIT 1000";
     if (req.session.chatId) {
         addedQuery = ((req.query.rantType == 1) ? "WHERE chat_id = " + req.session.chatId : "WHERE rant_type=0 LIMIT 1000");
@@ -425,6 +443,7 @@ rantRouter.get("/getPublicRants", function(req, res) {
 
     function generateLikesQuery(array) {
         var baseString = "SELECT * FROM rant_likes WHERE rant_id=?";
+        // WHERE rant_id is in a certain range
         for (var i = 1; i < array.length; i++) {
             baseString += " OR rant_id=?";
         }
@@ -890,7 +909,13 @@ rantRouter.post("/searchRant", function(req, res){
 
     getRants(queryArray);
     
-})
+});
+
+imageUploadRouter.post("/uploadImage", function(req, res){
+    console.dir(req.files);
+});
+
+
 
 
 app.listen(process.env.PORT || 3000);
