@@ -912,8 +912,8 @@ rantRouter.post("/searchRant", function(req, res){
 });
 
 imageUploadRouter.post("/uploadImage", function(req, res){
-    console.log(req.files);
-    cloudinary.uploader.upload(req.files.path, function(result) { console.log(result); });
+    console.log(req.files[0]);
+    cloudinary.uploader.upload(req.files[0].path, function(result) { console.log(result); });
 
 
 });
