@@ -479,6 +479,7 @@ rantRouter.get("/getPublicRants", function(req, res) {
                         data.res[res1[i].rant_id]["pseudonym"] = res1[i].pseudonym;
                         data.res[res1[i].rant_id]["rantType"] = res1[i].rant_type;
                         data.res[res1[i].rant_id]["rantDate"] = res1[i].rant_date;
+                        data.res[res1[i].rant_id]["imageUrl"] = res1[i].image_url;
                         if (i == (res1.length - 1)) {
                             getReplies(rantIds);
                         }
@@ -718,11 +719,25 @@ rantRouter.post("/postRant", function(req, res) {
     var pseudonym = req.body.pseudonym || "Anon";
     var chatId = req.body.chatId || req.session.chatId;
     var rantType = req.body.rantType || 0;
+    var imageUrl;
     var data = {
         err: 1,
         res: ""
     }
-    connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?", [rantContent, pseudonym, chatId, rantType], function(err, res1) {
+    
+    if(req.files){
+        cloudinary.uploader.upload(req.files[0].path, function(result){
+            if(result.url){
+                imageUrl = result.url;
+            }
+            else{
+                imageUrl = "";
+                data.err=1;
+            }
+        });
+    }
+
+    connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
         if (err) {
             data.res = err;
             res.json(data);
