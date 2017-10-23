@@ -724,7 +724,9 @@ rantRouter.post("/postRant", function(req, res) {
         err: 1,
         res: ""
     }
+    console.log(req.files);
     if(req.files){
+        console.log(req.files);
         cloudinary.uploader.upload(req.files[0].path, function(result){
             if(result.url){
                 imageUrl = result.url;
@@ -734,6 +736,9 @@ rantRouter.post("/postRant", function(req, res) {
                 data.err=1;
             }
         });
+    }
+    else{
+        imageUrl="";
     }
         
     connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
