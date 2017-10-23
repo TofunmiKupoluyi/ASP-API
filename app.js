@@ -724,12 +724,12 @@ rantRouter.post("/postRant", function(req, res) {
         err: 1,
         res: ""
     }
-    console.log(req.files);
     if(req.files){
-        console.log(req.files);
         cloudinary.uploader.upload(req.files[0].path, function(result){
+            console.log(result);
             if(result.url){
                 imageUrl = result.url;
+                console.log("WORKING:   "+imageUrl);
             }
             else{
                 imageUrl = "";
