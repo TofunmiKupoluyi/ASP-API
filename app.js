@@ -719,7 +719,7 @@ rantRouter.post("/postRant", function(req, res) {
     var pseudonym = req.body.pseudonym || "Anon";
     var chatId = req.body.chatId || req.session.chatId;
     var rantType = req.body.rantType || 0;
-    var imageUrl;
+    var imageUrl="";
     var uploadComplete = false;
     var data = {
         err: 1,
@@ -746,7 +746,7 @@ rantRouter.post("/postRant", function(req, res) {
     }
 
     if(uploadComplete){
-
+        console.log(imageUrl);
         connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
             if (err) {
                 data.res = err;
@@ -757,7 +757,7 @@ rantRouter.post("/postRant", function(req, res) {
                 res.json(data);
             }
         });
-        
+
     }
 
 });
