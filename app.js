@@ -912,11 +912,9 @@ rantRouter.post("/searchRant", function(req, res){
 });
 
 imageUploadRouter.post("/uploadImage", function(req, res){
-    console.log(req.files);
-    res.json();
-});
+    cloudinary.uploader.upload(req.files.myImage.path, function(result) { console.log(result); });
 
 
-
+    });
 
 app.listen(process.env.PORT || 3000);
