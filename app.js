@@ -719,8 +719,7 @@ rantRouter.post("/postRant", function(req, res) {
     var pseudonym = req.body.pseudonym || "Anon";
     var chatId = req.body.chatId || req.session.chatId;
     var rantType = req.body.rantType || 0;
-    var imageUrl="";
-    var uploadComplete = false;
+    var imageUrl;
     var data = {
         err: 1,
         res: ""
@@ -730,24 +729,26 @@ rantRouter.post("/postRant", function(req, res) {
             console.log(result);
             if(result.url){
                 imageUrl = result.url;
-                console.log("WORKING:   "+imageUrl);
-                uploadComplete = true;
+                connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
+                    if (err) {
+                        data.res = err;
+                        res.json(data);
+                    } else {
+                        data.err = 0;
+                        data.res = "Successful";
+                        res.json(data);
+                    }
+                });
             }
             else{
                 imageUrl = "";
                 data.err=1;
-                uploadComplete = true;
+                data.res = "There was an error uploading the file";
             }
         });
     }
     else{
-        imageUrl="";
-        uploadComplete = true;
-    }
-
-    if(uploadComplete){
-        console.log(imageUrl);
-        connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
+        connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?", [rantContent, pseudonym, chatId, rantType], function(err, res1) {
             if (err) {
                 data.res = err;
                 res.json(data);
@@ -757,9 +758,9 @@ rantRouter.post("/postRant", function(req, res) {
                 res.json(data);
             }
         });
-
     }
-
+    
+    
 });
 
 
