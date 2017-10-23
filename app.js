@@ -720,6 +720,7 @@ rantRouter.post("/postRant", function(req, res) {
     var chatId = req.body.chatId || req.session.chatId;
     var rantType = req.body.rantType || 0;
     var imageUrl;
+    var uploadComplete = false;
     var data = {
         err: 1,
         res: ""
@@ -730,27 +731,35 @@ rantRouter.post("/postRant", function(req, res) {
             if(result.url){
                 imageUrl = result.url;
                 console.log("WORKING:   "+imageUrl);
+                uploadComplete = true;
             }
             else{
                 imageUrl = "";
                 data.err=1;
+                uploadComplete = true;
             }
         });
     }
     else{
         imageUrl="";
+        uploadComplete = true;
     }
+
+    if(uploadComplete){
+
+        connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
+            if (err) {
+                data.res = err;
+                res.json(data);
+            } else {
+                data.err = 0;
+                data.res = "Successful";
+                res.json(data);
+            }
+        });
         
-    connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
-        if (err) {
-            data.res = err;
-            res.json(data);
-        } else {
-            data.err = 0;
-            data.res = "Successful";
-            res.json(data);
-        }
-    });
+    }
+
 });
 
 
