@@ -736,7 +736,7 @@ rantRouter.post("/postRant", function(req, res) {
         });
     }
         
-    connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
+    connection.query("INSERT INTO rants SET rant_content=?, pseudonym=?, chat_id=?, rant_type=?, image_url=?", [rantContent, pseudonym, chatId, rantType, imageUrl], function(err, res1) {
         if (err) {
             data.res = err;
             res.json(data);
@@ -925,11 +925,6 @@ rantRouter.post("/searchRant", function(req, res){
     
 });
 
-imageUploadRouter.post("/uploadImage", function(req, res){
-    cloudinary.uploader.upload(req.files.myImage.path,
-        function(result) { console.log(result); });
 
-
-    });
 
 app.listen(process.env.PORT || 3000);
