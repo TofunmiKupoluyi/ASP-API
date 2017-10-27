@@ -615,6 +615,7 @@ rantRouter.get("/getRantsLikedByUser", function(req, res) {
                             if(data.res[i]["rant_id"] == res1[j].rant_id){
                                 data.res[i]["content"]= res1[j]["rant_content"];
                                 data.res[i]["pseudonym"]= res1[j]["pseudonym"];
+                                data.res[i]["rantDate"] = res1[j]["rant_date"]; 
                             }  
                         }
                         if (i == (res1.length - 1)) {
